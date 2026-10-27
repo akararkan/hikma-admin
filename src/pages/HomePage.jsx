@@ -45,12 +45,10 @@ export default function HomePage() {
           { label: 'Used the app today', value: fmtNum(o.dauToday) },
           { label: 'Used the app this month', value: o.mau30d === -1 ? 'not ready' : fmtNum(o.mau30d) },
           { label: 'Online right now', value: fmtNum(o.onlineNow) },
-          { label: 'Live streams now', value: fmtNum(o.liveNow) },
           { label: 'Reports waiting', value: fmtNum(o.openReports), sub: `${fmtNum(o.appealBacklog)} appeals waiting` },
           { label: 'Research papers live', value: fmtNum(o.publishedResearch), sub: `${fmtNum(o.totalResearch)} in total` },
           { label: 'Questions asked', value: fmtNum(o.questions) },
           { label: 'Storage used', value: fmtBytes(o.storageBytes) },
-          { label: 'Gift coins (all time)', value: fmtNum(o.giftCoinsAllTime) },
         ]} />
       )}
       {o?.conversationsByType && (

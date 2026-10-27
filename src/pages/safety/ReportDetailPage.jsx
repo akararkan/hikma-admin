@@ -120,8 +120,8 @@ export default function ReportDetailPage() {
                 </>
               ) : (
                 <Warn>
-                  No saved copy exists for this report. Live-stream chat is never saved, so those
-                  reports have no content to show — decide with the other facts you have.
+                  No saved copy exists for this report. Private chat bodies are withheld from
+                  staff by policy — decide with the other facts you have.
                 </Warn>
               )}
             </div>

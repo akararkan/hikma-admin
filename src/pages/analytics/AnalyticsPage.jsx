@@ -74,12 +74,10 @@ function Overview() {
             { label: 'Active last 30 days (MAU)', value: o.mau30d === -1 ? 'not available' : fmtNum(o.mau30d), sub: o.mau30d === -1 ? 'We could not read this number right now. Try again later.' : undefined },
             stickiness != null ? { label: 'Come-back rate (DAU ÷ MAU)', value: `${stickiness}%`, sub: 'higher is better' } : null,
             { label: 'Online right now', value: fmtNum(o.onlineNow) },
-            { label: 'Live streams now', value: fmtNum(o.liveNow) },
             { label: 'Published research', value: fmtNum(o.publishedResearch), sub: `${fmtNum(o.totalResearch)} in total, all statuses` },
             { label: 'Questions', value: fmtNum(o.questions) },
             { label: 'Open reports', value: fmtNum(o.openReports), sub: `${fmtNum(o.appealBacklog)} appeals waiting` },
             { label: 'Storage used', value: fmtBytes(o.storageBytes) },
-            { label: 'Gift coins (all time)', value: fmtNum(o.giftCoinsAllTime) },
           ]} />
           <div className="card">
             <h2>Chats by type</h2>

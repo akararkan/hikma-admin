@@ -36,7 +36,6 @@ import KnowledgePage from './pages/knowledge/KnowledgePage'
 
 import ChatPage from './pages/chat/ChatPage'
 import ChannelsPage from './pages/chat/ChannelsPage'
-import StreamsPage from './pages/chat/StreamsPage'
 import LegalHoldsPage from './pages/chat/LegalHoldsPage'
 
 import MediaPage from './pages/media/MediaPage'
@@ -112,7 +111,6 @@ export default function App() {
 
           <Route path="/chat" element={<ChatPage />} />
           <Route path="/chat/channels" element={<ChannelsPage />} />
-          <Route path="/chat/streams" element={<StreamsPage />} />
           <Route path="/chat/legal-holds" element={<LegalHoldsPage />} />
 
           <Route path="/media" element={<MediaPage />} />

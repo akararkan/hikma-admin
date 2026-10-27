@@ -234,8 +234,6 @@ const CH = '/api/v1/admin/chat'
 export const ChatApi = {
   conversations: (params) => get(`${CH}/conversations`, params), // type, q, ownerId, includeDeleted, page, size
   overview: () => get(`${CH}/overview`),
-  calls: (params) => get(`${CH}/calls`, params), // type, status, from, to, page, size
-  callStats: (params) => get(`${CH}/calls/stats`, params),
   messageRequestStats: (params) => get(`${CH}/message-requests/stats`, params),
 }
 
@@ -253,20 +251,6 @@ export const ChannelsApi = {
   unfreeze: (id) => post(`${CN}/${id}/unfreeze`),
   inviteLinks: (id) => get(`${CN}/${id}/invite-links`),
   revokeInvite: (id, inviteId, body) => post(`${CN}/${id}/invite-links/${inviteId}/revoke`, body || {}),
-}
-
-/* ================= Streams (AdminStreamController) ================= */
-const ST = '/api/v1/admin/streams'
-export const StreamsApi = {
-  list: (params) => get(ST, params), // status, hostId, page, size
-  detail: (id) => get(`${ST}/${id}`),
-  forceStop: (id, body) => post(`${ST}/${id}/force-stop`, body || {}),
-  rotateKey: (id, body) => post(`${ST}/${id}/rotate-key`, body || {}),
-  removeGuest: (id, userId, body) => del(`${ST}/${id}/stage/${userId}`, body || {}),
-  recording: (id) => get(`${ST}/${id}/recording`),
-  recordingsFleet: (limit) => get(`${ST}/recordings`, { limit }),
-  deleteRecording: (id, body) => del(`${ST}/${id}/recording`, body || {}),
-  giftsTop: (limit) => get(`${ST}/gifts/top`, { limit }),
 }
 
 /* ================= Legal holds (LegalHoldController) ================= */
@@ -435,8 +419,6 @@ export const OpsApi = {
   redisFlush: (prefix) => api(`${O}/redis/keys`, { method: 'DELETE', params: { prefix } }),
   config: () => get(`${O}/config`),
   reconciler: () => get(`${O}/config/reconciler`),
-  mediaPlane: () => get(`${O}/media-plane`),
-  sweepOrphans: (params) => api(`${O}/streams/sweep-orphans`, { method: 'POST', params }), // graceMinutes, maxAgeHours, dryRun
   chatBackfill: () => post(`${O}/es/chat-messages/backfill`),
 }
 

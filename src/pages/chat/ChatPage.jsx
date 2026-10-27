@@ -9,11 +9,10 @@ export default function ChatPage() {
     <div>
       <PageIntro
         title="Chat overview"
-        lead="See facts and numbers about chats, calls, and message requests."
+        lead="See facts and numbers about chats and message requests."
         bullets={[
           'You can see how many chats of each kind exist.',
           'You can browse groups and channels — names and numbers only.',
-          'You can see call numbers: how many were answered or missed.',
           'You can spot spam senders in the message-request numbers.',
         ]}
       />
@@ -21,12 +20,10 @@ export default function ChatPage() {
       <Tabs tabs={[
         { id: 'overview', label: 'Totals' },
         { id: 'conversations', label: 'Groups & channels' },
-        { id: 'calls', label: 'Calls' },
         { id: 'requests', label: 'Message requests' },
       ]} active={tab} onChange={setTab} />
       {tab === 'overview' && <Overview />}
       {tab === 'conversations' && <Conversations />}
-      {tab === 'calls' && <Calls />}
       {tab === 'requests' && <MessageRequests />}
     </div>
   )
@@ -39,7 +36,7 @@ function Overview() {
       <HowTo steps={[
         'The tiles show how many chats of each kind exist.',
         '1-to-1 chats (DMs) are only counted. There is no list of them, anywhere.',
-        'Use the other tabs to browse groups and channels, calls, and message requests.',
+        'Use the other tabs to browse groups and channels and message requests.',
       ]} />
       <div className="card">
         <Err e={err} /><Loading on={loading} />
@@ -104,63 +101,6 @@ function Conversations() {
         empty="No groups or channels match. Note: 1-to-1 chats (DMs) never show here — that is by design."
       />
       <Pager data={data} page={page} onPage={setPage} />
-    </div>
-  )
-}
-
-function Calls() {
-  const [f, setF] = useState({ type: undefined, status: undefined, from: '', to: '' })
-  const [page, setPage] = useState(0)
-  const set = (patch) => { setPage(0); setF((s) => ({ ...s, ...patch })) }
-  const list = useLoad(() => ChatApi.calls({ ...f, from: f.from || undefined, to: f.to || undefined, page, size: 25 }), [JSON.stringify(f), page])
-  const stats = useLoad(() => ChatApi.callStats({ from: f.from || undefined, to: f.to || undefined }), [f.from, f.to])
-  const s = stats.data
-  return (
-    <div>
-      <Note>Calls go straight between the two phones (P2P). We never have the sound or video — only the facts below.</Note>
-      <HowTo steps={[
-        'The tiles show call numbers for the chosen dates (last 30 days if empty).',
-        'Use the boxes to filter the call list: voice or video, and the outcome.',
-        'Pick "From" and "To" dates to look at a different time window.',
-      ]} />
-      {s && (
-        <Tiles items={[
-          { label: 'Calls in this window', value: s.total },
-          { label: 'Answered (%)', value: `${s.answerRate}%` },
-          { label: 'Missed (%)', value: `${s.missedRate}%` },
-          ...Object.entries(s.byType || {}).map(([k, v]) => ({ label: k === 'VOICE' ? 'Voice calls' : k === 'VIDEO' ? 'Video calls' : `${k} calls`, value: v })),
-        ]} />
-      )}
-      {s?.byStatus && <div className="card"><h2>Calls by outcome (raw status names)</h2><KV obj={s.byStatus} /></div>}
-      <div className="filters">
-        <Field label="Voice or video"><Select value={f.type} onChange={(v) => set({ type: v })} options={[{ value: 'VOICE', label: 'Voice calls (VOICE)' }, { value: 'VIDEO', label: 'Video calls (VIDEO)' }]} /></Field>
-        <Field label="Outcome"><Select value={f.status} onChange={(v) => set({ status: v })} options={[
-          { value: 'RINGING', label: 'Still ringing (RINGING)' },
-          { value: 'ONGOING', label: 'Happening now (ONGOING)' },
-          { value: 'ENDED', label: 'Ended normally (ENDED)' },
-          { value: 'DECLINED', label: 'The other person said no (DECLINED)' },
-          { value: 'MISSED', label: 'Nobody answered (MISSED)' },
-          { value: 'CANCELLED', label: 'The caller gave up first (CANCELLED)' },
-        ]} /></Field>
-        <Field label="From"><input type="datetime-local" value={f.from} onChange={(e) => set({ from: e.target.value })} /></Field>
-        <Field label="To"><input type="datetime-local" value={f.to} onChange={(e) => set({ to: e.target.value })} /></Field>
-      </div>
-      <Err e={list.err} />
-      <DataTable
-        columns={[
-          { key: 'startedAt', label: 'When it started' },
-          { key: 'type', label: 'Voice or video' },
-          { key: 'status', label: 'Outcome', render: (r) => <StatusBadge value={r.status} /> },
-          { key: 'endReason', label: 'Why it ended' },
-          { key: 'answeredAt', label: 'Answered at' },
-          { key: 'endedAt', label: 'Ended at' },
-          { key: 'initiatorId', label: 'Who called', render: (r) => <Id v={r.initiatorId} /> },
-        ]}
-        rows={pageRows(list.data)}
-        loading={list.loading}
-        empty="No calls found for these filters."
-      />
-      <Pager data={list.data} page={page} onPage={setPage} />
     </div>
   )
 }

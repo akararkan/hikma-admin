@@ -223,7 +223,7 @@ function Explain() {
       <Err e={act.err} />
       {explain && (
         <>
-          <h3>Next feed page ({explain.items?.length ?? 0} items, {explain.liveRailSize ?? 0} live streams on top)</h3>
+          <h3>Next feed page ({explain.items?.length ?? 0} items)</h3>
           <DataTable
             columns={[
               { key: 'rankScore', label: 'Score' },

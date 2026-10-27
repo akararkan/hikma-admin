@@ -16,7 +16,7 @@ export default function OpsPage() {
           'You can run, pause, and watch the background jobs.',
           'You can see failed messages and send them again or throw them away.',
           'You can check the cache (Redis) and delete safe parts of it.',
-          'You can clean up stuck live streams and refill the chat search list.',
+          'You can refill the chat search list.',
         ]}
       />
       <HowTo steps={[
@@ -33,7 +33,7 @@ export default function OpsPage() {
         { id: 'queues', label: 'Queues & failed messages' },
         { id: 'redis', label: 'Cache (Redis)' },
         { id: 'config', label: 'Settings list (config)' },
-        { id: 'media', label: 'Live video & fix tools' },
+        { id: 'media', label: 'Search refill' },
       ]} active={tab} onChange={setTab} />
       {tab === 'health' && <Health />}
       {tab === 'jobs' && <Jobs />}
@@ -53,7 +53,6 @@ const DEP_INFO = {
   rabbitmq: { name: 'Message queues (RabbitMQ)', ifDown: 'Notifications, analytics and media jobs stop quietly.' },
   elasticsearch: { name: 'Search engine (Elasticsearch)', ifDown: 'All search stops working.' },
   r2: { name: 'File storage (R2)', ifDown: 'Photo and video upload and download fail.' },
-  mediamtx: { name: 'Live video server (MediaMTX)', ifDown: 'Live streams cannot start or play.' },
   mail: { name: 'Email sender (Resend)', ifDown: 'Emails stop. In-app notifications still work.' },
 }
 
@@ -426,18 +425,9 @@ function Config() {
 }
 
 function MediaPlane() {
-  const plane = useLoad(() => OpsApi.mediaPlane(), [])
   const act = useAction()
-  const [sweep, setSweep] = useState({ graceMinutes: 30, maxAgeHours: 12, dryRun: true })
-  const [sweepResult, setSweepResult] = useState(null)
-  const [confirmWet, setConfirmWet] = useState(false)
   const [backfillResult, setBackfillResult] = useState(null)
   const [backfillRuns, setBackfillRuns] = useState(null)
-
-  const runSweep = async () => {
-    const r = await act.run(() => OpsApi.sweepOrphans(sweep), sweep.dryRun ? 'Safe test done — nothing was changed.' : 'Sweep done — the streams listed below were ended.')
-    if (r) setSweepResult(r)
-  }
 
   const loadBackfillRuns = async () => {
     const r = await act.run(() => OpsApi.jobRuns('chat-message-backfill', { page: 0, size: 10 }), 'Progress loaded.')
@@ -446,53 +436,6 @@ function MediaPlane() {
 
   return (
     <div>
-      <div className="card">
-        <h2>Live video server (MediaMTX)</h2>
-        <Note>Raw status from the live video server: which streams exist and who is connected.</Note>
-        <button className="small secondary" title="GET /api/v1/admin/ops/media-plane" onClick={plane.reload}>Check again</button>
-        <Err e={plane.err} /><Loading on={plane.loading} />
-        {plane.data && (
-          <>
-            <KV obj={{ 'Control address': plane.data.controlApi, 'Can we reach it?': plane.data.reachable }} />
-            <h4>Stream paths</h4><JsonBlock v={tryParse(plane.data.paths)} />
-            <h4>Browser (WebRTC) sessions</h4><JsonBlock v={tryParse(plane.data.webrtcSessions)} />
-            <h4>Streaming-app connections (RTMP)</h4><JsonBlock v={tryParse(plane.data.rtmpConns)} />
-          </>
-        )}
-      </div>
-      <div className="card">
-        <h2>Clean up stuck live streams</h2>
-        <Note>A crash can leave a stream marked LIVE with nobody sending video. This tool ends those streams. Always run the safe test first — it changes nothing. If the live video server is unreachable, EVERY stream looks stuck — do not run the real sweep then.</Note>
-        <div className="filters">
-          <Field label="Wait time before a stream counts as stuck (minutes)"><input type="number" min={1} value={sweep.graceMinutes} onChange={(e) => setSweep((s) => ({ ...s, graceMinutes: Number(e.target.value) || 30 }))} /></Field>
-          <Field label="End any stream older than (hours)"><input type="number" min={1} value={sweep.maxAgeHours} onChange={(e) => setSweep((s) => ({ ...s, maxAgeHours: Number(e.target.value) || 12 }))} /></Field>
-          <Field label="Safe test (changes nothing)"><input type="checkbox" checked={sweep.dryRun} onChange={(e) => setSweep((s) => ({ ...s, dryRun: e.target.checked }))} /></Field>
-          <button disabled={act.busy} title="POST /api/v1/admin/ops/streams/sweep-orphans" className={sweep.dryRun ? '' : 'danger'} onClick={() => sweep.dryRun ? runSweep() : setConfirmWet(true)}>
-            {sweep.dryRun ? 'Run the safe test' : 'End stuck streams…'}
-          </button>
-        </div>
-        <Err e={act.err} /><Ok msg={act.ok} />
-        {sweepResult && (
-          <>
-            {!sweepResult.mediamtxReachable && <Warn>We could not reach the live video server during this check. Every stream looks stuck when the server is unreachable — do not trust this list, and do not run the real sweep now.</Warn>}
-            <Tiles items={[
-              { label: sweepResult.dryRun ? 'Streams that WOULD be ended (safe test)' : 'Streams ended', value: (sweepResult.swept || []).length },
-            ]} />
-            <DataTable
-              columns={[
-                { key: 'streamId', label: 'Stream', render: (r) => <Id v={r.streamId} /> },
-                { key: 'hostId', label: 'Host (user)', render: (r) => <Id v={r.hostId} /> },
-                { key: 'startedAt', label: 'Started' },
-                { key: 'reason', label: 'Why it was picked' },
-                { key: 'ended', label: 'Ended?' },
-                { key: 'error', label: 'Problem' },
-              ]}
-              rows={sweepResult.swept || []}
-              empty="No stuck streams found. Nothing to clean up."
-            />
-          </>
-        )}
-      </div>
       <div className="card">
         <h2>Refill the chat search list (backfill)</h2>
         <Note>Chat search can miss old messages after a problem. This tool fills in only the missing ones, so it is safe to run more than once. It runs in the background — use "Check progress" to see how it went.</Note>
@@ -519,18 +462,6 @@ function MediaPlane() {
           />
         )}
       </div>
-      {confirmWet && (
-        <FormModal title="End stuck live streams for real" danger requireText="SWEEP"
-          intro="This ends the stuck live streams for everyone. Viewers get cut off. You cannot undo it. Run the safe test first if you have not."
-          fields={[]}
-          submitLabel="End the stuck streams"
-          onSubmit={async () => { await runSweep() }}
-          onClose={() => setConfirmWet(false)} />
-      )}
     </div>
   )
-}
-function tryParse(s) {
-  if (typeof s !== 'string') return s
-  try { return JSON.parse(s) } catch { return s }
 }

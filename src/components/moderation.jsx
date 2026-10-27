@@ -21,11 +21,9 @@ export const LABELS = ['toxic', 'severe_toxic', 'obscene', 'threat', 'insult', '
  */
 export const STRICT_LABELS = new Set(['threat', 'identity_hate'])
 
-/** 13 text surfaces. Wire values are lower-case; case rows echo them upper-cased. */
 export const ENTITY_TYPES = [
   'post', 'post_comment', 'story', 'story_poll', 'research', 'research_comment',
-  'qna_question', 'qna_answer', 'chat_message', 'channel', 'stream_meta',
-  'live_chat', 'content_annotation',
+  'qna_question', 'qna_answer', 'chat_message', 'channel', 'content_annotation',
 ]
 
 /**
@@ -46,11 +44,11 @@ export const TRAINING_SOURCES = [
 ]
 
 /**
- * Chat and live-chat bodies are withheld from staff by policy — the queue returns scores, field
+ * Chat bodies are withheld from staff by policy — the queue returns scores, field
  * names and bands but never the message, and `teachModel` is ignored for them (promoting a private
  * message into the training set would bake it into model weights, a far larger disclosure).
  */
-const REDACTED_TYPES = new Set(['CHAT_MESSAGE', 'LIVE_CHAT'])
+const REDACTED_TYPES = new Set(['CHAT_MESSAGE'])
 export const isRedacted = (entityType) => REDACTED_TYPES.has(String(entityType || '').toUpperCase())
 
 /* ---------------- band arithmetic ---------------- */

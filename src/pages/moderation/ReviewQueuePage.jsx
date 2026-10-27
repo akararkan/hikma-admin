@@ -22,8 +22,6 @@ const TYPE_LABELS = {
   qna_answer: 'Answer (Q&A)',
   chat_message: 'Private chat message',
   channel: 'Channel',
-  stream_meta: 'Live stream info',
-  live_chat: 'Live stream chat (private)',
   content_annotation: 'Note on content',
   media_image: 'Image (uploaded picture)',
 }

@@ -702,8 +702,6 @@ threshold.<type>.<label>.low | .high     per-type score limit (wins over the def
 hold.<type>.ms                           longest wait
 inline.<type>.ms                         instant budget
 fallback.<type>                          FAIL_CLOSED | FAIL_OPEN_SHADOW
-livechat.buffer.ms
-livechat.borderline.hidden
 retrain.max-f1-drop
 retrain.require-human-promote
 image.enabled                            image checks on/off (ANDed with the big switch)
